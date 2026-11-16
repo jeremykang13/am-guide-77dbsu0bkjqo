@@ -13,8 +13,8 @@
 | 마감 카드 문구(남은 날짜별) | `data/config.json` | `deadlineCopy` (`far` · `soon` · `today` · `past`, `{date}`는 마감일로 바뀜) |
 | 홈 접이식 "하루에 한 번에 찍으려면" | `data/config.json` | `dayTip` |
 | 콘텐츠 제목 · 게시일 · 형식 · 길이 | `data/contents.json` | `title`, `post`, `format`, `length` |
-| **홈 맨 아래 달력** | `data/contents.json` · `data/config.json` | 콘텐츠의 `postDate`(게시일)와 `dueDate`(콘텐츠별 마감일), `config.json`의 `deadline`(파일 전달일)을 읽어 자동으로 그려요. 날짜를 바꾸면 달력도 바뀌어요(화면의 `post` 글자도 같이 고치세요). 문구는 `calendar.title`, `calendar.intro` |
-| 콘텐츠별 파일 보내기 문구 | `data/contents.json` | `deliver` (예: `"11/17(화)까지"`), `emphasizeDeliver`: true면 강조색 |
+| **홈 맨 아래 달력(전달일 · 게시일)** | `data/contents.json` | 콘텐츠마다 `deliverDate`(전달일, 테두리 번호)와 `postDate`(게시일, 채운 번호)를 읽어 자동으로 그려요. 날짜를 바꾸면 달력도 바뀌어요. 콘텐츠 화면의 글자(`post`, `deliver`)도 같이 고치세요. 달력 문구는 `config.json`의 `calendar` |
+| 콘텐츠별 파일 보내기 문구 | `data/contents.json` | `deliver` (예: `"11/18(수)까지"`), `emphasizeDeliver`: true면 강조색 |
 | 레퍼런스 GIF · "볼 점" · 원본 링크 | `data/contents.json` | `ref.gif`, `ref.thumb`, `ref.point`, `ref.links` (파일은 `assets/ref/`) |
 | 구도 한 줄 · 촬영 내용 · 피하면 좋은 것 | `data/contents.json` | `composition`, `shoot` (`avoid[].text/why`) |
 | 일정 · 촬영 세팅 · 확인 항목 | `data/contents.json` | `schedule`, `setup`, `confirm` |

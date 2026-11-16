@@ -290,12 +290,11 @@ details.tip[open] summary svg { transform: rotate(90deg); }
 .deadline .copy { padding-top: 8px; margin-top: 4px; }
 /* 캘린더 */
 .pbadge { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 26px; padding: 0 6px; border-radius: 13px; background: var(--grad); color: var(--on-grad); font-size: 14px; font-weight: 800; line-height: 1; flex: none; }
-.dl { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 7px; border-radius: 12px; border: 1.5px solid var(--accent); color: var(--accent); font-size: 14px; font-weight: 800; line-height: 1; flex: none; }
-.pbadge.due { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
-.dl.send { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+.pbadge { white-space: nowrap; }
+.pbadge.send { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
 .callegend { display: flex; flex-direction: column; gap: 6px; padding: 0 6px; font-size: 15px; color: var(--fg2); }
 .callegend li { display: flex; align-items: center; gap: 10px; }
-.callegend .pbadge, .callegend .dl { min-width: 44px; }
+.callegend .pbadge { min-width: 44px; }
 .calkey { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 10px 6px 0; border-top: 1px solid var(--line); font-size: 15px; }
 .calkey li { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .calcard { padding: 14px 10px 12px; display: flex; flex-direction: column; gap: 10px; }
@@ -303,8 +302,6 @@ details.tip[open] summary svg { transform: rotate(90deg); }
 .calgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
 .calgrid .wd { text-align: center; font-size: 14px; font-weight: 700; color: var(--fg2); padding-bottom: 2px; }
 .day { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 64px; padding: 6px 2px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); text-decoration: none; min-width: 0; }
-.dl, .pbadge { white-space: nowrap; }
-.day .dl { padding: 0 3px; font-size: 13px; letter-spacing: -.02em; }
 .day .pbadge { min-width: 30px; padding: 0 4px; }
 .day .dn { font-size: 15px; font-weight: 700; line-height: 1.2; }
 .day.is-past { background: var(--surface2); }
@@ -477,7 +474,7 @@ details.tip[open] summary svg { transform: rotate(90deg); }
     var cfg = D.config, n = dday(), tip = cfg.dayTip;
     var h = '<section class="hero"><h1>' + esc(cfg.request.title) + '</h1>'
       + cfg.request.paragraphs.map(function (p) { return '<p>' + rich(p) + '</p>'; }).join('') + '</section>';
-    h += '<section class="card deadline" aria-label="전달 마감"><span class="lbl">파일 보내기 마감</span><span class="date">' + esc(cfg.deadlineLabel) + '</span>'
+    h += '<section class="card deadline" aria-label="전달 마감"><span class="lbl">먼저 보낼 날</span><span class="date">' + esc(cfg.deadlineLabel) + '</span>'
       + (n != null ? '<span class="dday" aria-label="마감까지 ' + esc(ddayText(n)) + '">' + esc(ddayText(n)) + '</span>' : '')
       + '<p class="copy">' + esc(deadlineCopy(n)) + (cfg.deadlineExtra ? '<br>' + esc(cfg.deadlineExtra) : '') + '</p></section>';
     h += '<section class="sec"><h2>콘텐츠 6개</h2><p class="muted">눌러서 구도와 필요한 컷을 확인해 보세요. 같은 컷은 한 번만 찍으면 여러 콘텐츠에 같이 써요.</p><div class="clist">'
@@ -496,13 +493,12 @@ details.tip[open] summary svg { transform: rotate(90deg); }
   function iso(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
   function viewCalendar() {
     var cfg = D.config, cal = cfg.calendar || {}, ev = {}, now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    function slot(dt) { var k = iso(dt); return ev[k] || (ev[k] = { date: dt, posts: [], dues: [], deliver: false }); }
+    function slot(dt) { var k = iso(dt); return ev[k] || (ev[k] = { date: dt, posts: [], sends: [] }); }
     D.contents.contents.forEach(function (c) {
-      var p = pd(c.postDate), u = pd(c.dueDate);
+      var p = pd(c.postDate), u = pd(c.deliverDate);
       if (p) slot(p).posts.push(c);
-      if (u) slot(u).dues.push(c);
+      if (u) slot(u).sends.push(c);
     });
-    var dl = pd(cfg.deadline); if (dl) slot(dl).deliver = true;
     var keys = Object.keys(ev).sort(); if (!keys.length) return '';
     var first = ev[keys[0]].date, last = ev[keys[keys.length - 1]].date;
     var start = new Date(first); if (today < first && (first - today) / 86400000 <= 14) start = new Date(today);
@@ -515,8 +511,7 @@ details.tip[open] summary svg { transform: rotate(90deg); }
       var inner = '<span class="dn">' + label + '</span>';
       var aria = fmtDate(d) + (isToday ? ' 오늘' : '');
       if (e) {
-        if (e.deliver) { inner += '<span class="dl send">전달</span>'; aria += ', 파일 전달'; }
-        e.dues.forEach(function (c) { inner += '<span class="pbadge due">' + esc(c.id) + '</span>'; aria += ', ' + c.id + ' ' + c.title + ' 마감'; });
+        e.sends.forEach(function (c) { inner += '<span class="pbadge send">' + esc(c.id) + '</span>'; aria += ', ' + c.id + ' ' + c.title + ' 전달'; });
         e.posts.forEach(function (c) { inner += '<span class="pbadge">' + esc(c.id) + '</span>'; aria += ', ' + c.id + ' ' + c.title + ' 게시'; });
       }
       cells += '<div class="day' + (isToday ? ' is-today' : '') + (past ? ' is-past' : '') + (e ? ' has-ev' : '') + '"' + (e || isToday ? ' role="group" aria-label="' + esc(aria) + '"' : '') + '>' + inner + '</div>';
@@ -527,8 +522,8 @@ details.tip[open] summary svg { transform: rotate(90deg); }
     return '<section class="sec cal" aria-label="' + esc(cal.title || '일정') + '"><h2>' + esc(cal.title || '일정 한눈에 보기') + '</h2><p class="muted">' + esc(cal.intro || '') + '</p>'
       + '<div class="card calcard"><p class="calmonth">' + esc(mtitle) + '</p>'
       + '<div class="calgrid" role="presentation">' + '일월화수목금토'.split('').map(function (w) { return '<span class="wd">' + w + '</span>'; }).join('') + cells + '</div>'
-      + '<ul class="callegend"><li><span class="dl send">전달</span><span>파일 전달일 (' + esc(cfg.deadlineLabel) + '까지 보내 주시면 좋아요)</span></li>'
-      + '<li><span class="pbadge due">01</span><span>콘텐츠별 마감일</span></li><li><span class="pbadge">01</span><span>게시일</span></li></ul>'
+      + '<ul class="callegend"><li><span class="pbadge send">01</span><span>전달일 (파일 보내는 날)</span></li>'
+      + '<li><span class="pbadge">01</span><span>게시일</span></li></ul>'
       + '<ul class="calkey">' + key + '</ul></div></section>';
   }
 
