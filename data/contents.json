@@ -7,6 +7,7 @@
       "format": "릴스(영상)",
       "length": "15~20초",
       "post": "11/17(화)",
+      "postDate": "2026-11-17",
       "deliver": "오늘 중이면 가장 좋아요",
       "emphasizeDeliver": true,
       "orientation": "landscape",
@@ -48,6 +49,7 @@
       "format": "릴스(영상)",
       "length": "15~20초",
       "post": "11/19(목)",
+      "postDate": "2026-11-19",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {
@@ -88,6 +90,7 @@
       "format": "캐러셀(사진 여러 장)",
       "length": "4~5장",
       "post": "11/20(금)",
+      "postDate": "2026-11-20",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {
@@ -127,6 +130,7 @@
       "format": "릴스(영상)",
       "length": "10~15초",
       "post": "11/24(화)",
+      "postDate": "2026-11-24",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {
@@ -165,6 +169,7 @@
       "format": "릴스(영상)",
       "length": "10~20초",
       "post": "11/26(목)",
+      "postDate": "2026-11-26",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {
@@ -203,6 +208,7 @@
       "format": "캐러셀(사진 여러 장)",
       "length": "4~5장",
       "post": "11/27(금)",
+      "postDate": "2026-11-27",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {

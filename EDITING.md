@@ -13,6 +13,7 @@
 | 마감 카드 문구(남은 날짜별) | `data/config.json` | `deadlineCopy` (`far` · `soon` · `today` · `past`, `{date}`는 마감일로 바뀜) |
 | 홈 접이식 "하루에 한 번에 찍으려면" | `data/config.json` | `dayTip` |
 | 콘텐츠 제목 · 게시일 · 형식 · 길이 | `data/contents.json` | `title`, `post`, `format`, `length` |
+| **홈 맨 아래 달력** | `data/contents.json` · `data/config.json` | 게시일은 콘텐츠의 `postDate`(`"2026-11-17"`), 마감일은 `deadline`을 읽어 자동으로 그려요. 날짜를 바꾸면 달력도 바뀌어요(화면에 보이는 `post` 글자도 같이 고치세요). 문구는 `calendar.title`, `calendar.intro` |
 | 콘텐츠별 파일 보내기 문구 | `data/contents.json` | `deliver` (예: `"11/17(화)까지"`), `emphasizeDeliver`: true면 강조색 |
 | 레퍼런스 GIF · "볼 점" · 원본 링크 | `data/contents.json` | `ref.gif`, `ref.thumb`, `ref.point`, `ref.links` (파일은 `assets/ref/`) |
 | 구도 한 줄 · 촬영 내용 · 피하면 좋은 것 | `data/contents.json` | `composition`, `shoot` (`avoid[].text/why`) |

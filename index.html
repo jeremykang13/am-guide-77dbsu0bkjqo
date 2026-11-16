@@ -288,6 +288,32 @@ details.tip[open] summary svg { transform: rotate(90deg); }
 .deadline .date { font-size: 26px; }
 .dday { min-width: 72px; height: 72px; border-radius: 36px; font-size: 21px; }
 .deadline .copy { padding-top: 8px; margin-top: 4px; }
+/* 캘린더 */
+.pbadge { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 26px; padding: 0 6px; border-radius: 13px; background: var(--grad); color: var(--on-grad); font-size: 14px; font-weight: 800; line-height: 1; flex: none; }
+.dl { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 7px; border-radius: 12px; border: 1.5px solid var(--accent); color: var(--accent); font-size: 14px; font-weight: 800; line-height: 1; flex: none; }
+.calcard { padding: 14px 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+.calmonth { font-weight: 800; font-size: 19px; padding-left: 6px; }
+.calgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.calgrid .wd { text-align: center; font-size: 14px; font-weight: 700; color: var(--fg2); padding-bottom: 2px; }
+.day { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 64px; padding: 6px 2px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); text-decoration: none; min-width: 0; }
+.dl, .pbadge { white-space: nowrap; }
+.day .dl { padding: 0 3px; font-size: 13px; letter-spacing: -.02em; }
+.day .pbadge { min-width: 30px; padding: 0 4px; }
+.day .dn { font-size: 15px; font-weight: 700; line-height: 1.2; }
+.day.is-past { background: var(--surface2); }
+.day.is-past .dn { color: var(--fg2); font-weight: 500; }
+.day.has-ev { background: var(--accent-soft); border-color: var(--accent); }
+.day.is-today { border: 3px solid var(--fg); }
+.day.is-today .dn { font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+.callegend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 15px; color: var(--fg2); padding: 0 6px; }
+.slist { display: flex; flex-direction: column; gap: 10px; }
+.srow { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.sdate { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sdate b { font-size: 18px; }
+.sitems { display: flex; flex-direction: column; }
+.sitem { display: flex; align-items: flex-start; gap: 12px; min-height: 48px; padding: 8px 0; text-decoration: none; border-top: 1px solid var(--line); }
+.sitem:first-child { border-top: 0; }
+.sitem .pbadge, .sitem .dl { margin-top: 2px; min-width: 44px; }
 .hero { padding: 18px 18px 16px; gap: 8px; }
 .hero h1 { font-size: 24px; }
 .hero p { font-size: 17px; line-height: 1.6; }
@@ -463,7 +489,49 @@ details.tip[open] summary svg { transform: rotate(90deg); }
         + (tip.rows || []).map(function (r) { return '<div><dt>' + esc(r.when) + '</dt><dd>' + esc(r.what) + '</dd></div>'; }).join('') + '</dl><p class="muted">' + esc(tip.note || '') + '</p></div></details>';
     }
     h += '<a class="card shortcut" href="#guide"><span class="tag">4K</span><span><b>촬영 전에 4K로 맞춰 두면 좋아요</b><span class="muted small">1분이면 돼요</span></span></a>';
+    h += viewCalendar();
     return h;
+  }
+
+  /* ---------- 캘린더 (홈 맨 아래) ---------- */
+  function pd(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+  function iso(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function viewCalendar() {
+    var cfg = D.config, cal = cfg.calendar || {}, ev = {}, now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    function slot(dt) { var k = iso(dt); return ev[k] || (ev[k] = { date: dt, posts: [], deadline: false }); }
+    D.contents.contents.forEach(function (c) { var dt = pd(c.postDate); if (dt) slot(dt).posts.push(c); });
+    var dl = pd(cfg.deadline); if (dl) slot(dl).deadline = true;
+    var keys = Object.keys(ev).sort(); if (!keys.length) return '';
+    var first = ev[keys[0]].date, last = ev[keys[keys.length - 1]].date;
+    var start = new Date(first); if (today < first && (first - today) / 86400000 <= 14) start = new Date(today);
+    start.setDate(start.getDate() - start.getDay());
+    var end = new Date(last); end.setDate(end.getDate() + (6 - end.getDay()));
+    var cells = '', d = new Date(start), guard = 0;
+    while (d <= end && guard++ < 70) {
+      var k = iso(d), e = ev[k], isToday = k === iso(today), past = d < today && !isToday;
+      var label = d.getDate() === 1 ? (d.getMonth() + 1) + '/1' : d.getDate();
+      var inner = '<span class="dn">' + label + '</span>' + (e && e.deadline ? '<span class="dl">마감</span>' : '')
+        + (e ? e.posts.map(function (c) { return '<span class="pbadge">' + esc(c.id) + '</span>'; }).join('') : '');
+      var cls = 'day' + (isToday ? ' is-today' : '') + (past ? ' is-past' : '') + (e ? ' has-ev' : '');
+      var aria = fmtDate(d) + (isToday ? ' 오늘' : '') + (e ? (e.deadline ? ', 파일 보내기 마감' : '') + e.posts.map(function (c) { return ', ' + c.id + ' ' + c.title + ' 게시'; }).join('') : '');
+      cells += e && e.posts.length
+        ? '<a class="' + cls + '" href="#c-' + esc(e.posts[0].id) + '" aria-label="' + esc(aria) + '">' + inner + '</a>'
+        : '<div class="' + cls + '"' + (e || isToday ? ' role="group" aria-label="' + esc(aria) + '"' : '') + '>' + inner + '</div>';
+      d.setDate(d.getDate() + 1);
+    }
+    var m1 = first.getMonth() + 1, m2 = last.getMonth() + 1, mtitle = m1 === m2 ? m1 + '월' : m1 + '월 ~ ' + m2 + '월';
+    var rows = keys.map(function (key) {
+      var e = ev[key], n = Math.round((e.date - today) / 86400000), chip = n === 0 ? '오늘' : n === 1 ? '내일' : n > 1 ? n + '일 뒤' : '지났어요';
+      return '<li class="srow"><div class="sdate"><b>' + esc(fmtDate(e.date)) + '</b><span class="chip">' + chip + '</span></div><div class="sitems">'
+        + (e.deadline ? '<div class="sitem"><span class="dl">마감</span><span>파일 보내기 마감' + (cfg.deadlineExtra ? '<br><span class="muted small">' + esc(cfg.deadlineExtra) + '</span>' : '') + '</span></div>' : '')
+        + e.posts.map(function (c) { return '<a class="sitem" href="#c-' + esc(c.id) + '"><span class="pbadge">' + esc(c.id) + '</span><span><b>' + esc(c.title) + '</b> 게시<br><span class="muted small">' + esc(c.format) + ' ' + esc(c.length) + '</span></span></a>'; }).join('')
+        + '</div></li>';
+    }).join('');
+    return '<section class="sec cal" aria-label="' + esc(cal.title || '일정') + '"><h2>' + esc(cal.title || '일정 한눈에 보기') + '</h2><p class="muted">' + esc(cal.intro || '') + '</p>'
+      + '<div class="card calcard"><p class="calmonth">' + esc(mtitle) + '</p>'
+      + '<div class="calgrid" role="presentation">' + '일월화수목금토'.split('').map(function (w) { return '<span class="wd">' + w + '</span>'; }).join('') + cells + '</div>'
+      + '<p class="callegend"><span class="pbadge">01</span> 게시일(콘텐츠 번호) <span class="dl">마감</span> 파일 보내기 마감</p></div>'
+      + '<ol class="slist">' + rows + '</ol></section>';
   }
 
   /* ---------- 화면: 콘텐츠 상세 ---------- */
