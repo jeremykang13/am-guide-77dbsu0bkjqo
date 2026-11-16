@@ -5,7 +5,16 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&family=Cormorant+Garamond:ital,wght@1,500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500&text=Alice%20Moon&display=swap">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<meta name="theme-color" content="#F3F6FD" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#07080D" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="촬영 가이드">
 <style>
 /* 레이아웃: 단일 컬럼(최대 520px) · 상단 고정 바 · 하단 탭 5개 · 컷 상세는 아래에서 올라오는 시트.
    색: 밝게(야외 햇빛) / 어둡게(실내·밤) 두 가지. 기본은 폰 설정을 따르고, 상단 버튼으로 바꿀 수 있어요. */
@@ -151,6 +160,7 @@ h3 { font-size: 19px; line-height: 1.4; font-weight: 700; }
 .cut-title { font-weight: 700; font-size: 18px; line-height: 1.4; }
 .cut-what { font-size: 16.5px; color: var(--fg2); line-height: 1.5; }
 .cut-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 4px; font-size: 15px; color: var(--fg2); }
+.cut.is-done { background: var(--ok-soft); }
 .cut.is-done { background: color-mix(in srgb, var(--ok-soft) 55%, var(--surface)); }
 .cut.is-done .cut-title { color: var(--fg2); }
 .more { display: inline-flex; align-items: center; gap: 2px; font-size: 15px; color: var(--accent); font-weight: 700; }
@@ -246,7 +256,7 @@ textarea { resize: vertical; }
 .status { min-height: 28px; font-weight: 700; color: var(--ok); }
 
 /* 시트 */
-dialog.sheet { margin: auto auto 0; width: 100%; max-width: 520px; max-height: 92dvh; border: 0; padding: 0; border-radius: 24px 24px 0 0; background: var(--bg); color: var(--fg); overflow: auto; box-shadow: 0 -8px 40px rgba(0,0,0,.35); }
+dialog.sheet { margin: auto auto 0; width: 100%; max-width: 520px; max-height: 92vh; max-height: 92dvh; border: 0; padding: 0; border-radius: 24px 24px 0 0; background: var(--bg); color: var(--fg); overflow: auto; box-shadow: 0 -8px 40px rgba(0,0,0,.35); }
 dialog.sheet::backdrop { background: rgba(4,6,16,.6); }
 @media (min-width: 560px) { dialog.sheet { margin: auto; border-radius: 24px; } }
 .sheetbar { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px 10px 20px; background: var(--bg); border-bottom: 1px solid var(--line); }
@@ -259,10 +269,18 @@ dialog.sheet::backdrop { background: rgba(4,6,16,.6); }
 .bigchk .box { width: 34px; height: 34px; border-radius: 10px; border: 2.5px solid var(--fg2); display: flex; align-items: center; justify-content: center; color: transparent; background: var(--surface); }
 .bigchk .box svg { width: 22px; height: 22px; stroke-width: 3.2; }
 .bigchk input:checked + .box { background: var(--ok); border-color: var(--ok); color: var(--bg); }
+.bigchk.on { border-color: var(--ok); background: var(--ok-soft); }
+.bigchk input:focus-visible + .box { outline: 3px solid var(--focus); outline-offset: 2px; }
 .bigchk:has(input:checked) { border-color: var(--ok); background: var(--ok-soft); }
 .bigchk:has(input:focus-visible) { outline: 3px solid var(--focus); outline-offset: 2px; }
 
 .sheetbody h3 { margin-bottom: 6px; }
+a, button, label, summary, input { touch-action: manipulation; }
+html { -webkit-tap-highlight-color: rgba(90,112,242,.18); }
+.appbanner { display: flex; flex-direction: column; gap: 10px; background: var(--accent-soft); border: 1.5px solid var(--accent); border-radius: 16px; padding: 14px; }
+.appbanner p { font-weight: 500; }
+.appbanner .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.appbanner .btn { min-height: 48px; font-size: 16px; flex: 1 1 140px; padding: 0 12px; }
 .empty { text-align: center; padding: 40px 0; color: var(--fg2); }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
@@ -375,6 +393,19 @@ details.tip[open] summary svg { transform: rotate(90deg); }
   var KEY = 'alicemoon-shoot-guide-v1';
   var mem = { checked: {}, phone: -1, answers: {}, theme: 'auto', include: true, sharedSeen: false };
   try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); if (o && typeof o === 'object') { for (var k in o) mem[k] = o[k]; } } } catch (e) {}
+  function storageOk() { try { var k = '__am_t'; localStorage.setItem(k, '1'); localStorage.removeItem(k); return true; } catch (e) { return false; } }
+  var UA = navigator.userAgent || '', IN_KAKAO = /KAKAOTALK/i.test(UA) || /[?&]inapp=kakao/.test(location.search);
+  var IN_APP = IN_KAKAO || /NAVER\(inapp|Instagram|FB_IAB|FBAN|FBAV|Line\//i.test(UA);
+  var STORE_OK = storageOk(), bannerOff = false;
+  function bannerHTML() {
+    if (bannerOff || (!IN_APP && STORE_OK)) return '';
+    var base = location.href.split('#')[0];
+    var msg = IN_APP ? (IN_KAKAO ? '카카오톡 안에서 열었어요. ' : '앱 안에서 열었어요. ') + '크롬이나 사파리로 열면 체크가 더 안정적으로 저장돼요.' : '이 화면에서는 체크가 저장되지 않을 수 있어요. 크롬이나 사파리로 열면 저장돼요.';
+    return '<div class="appbanner" role="note"><p>' + esc(msg) + '</p><div class="row">'
+      + (IN_KAKAO ? '<a class="btn primary" href="kakaotalk://web/openExternal?url=' + encodeURIComponent(base) + '">브라우저로 열기</a>' : '')
+      + '<button type="button" class="btn line" data-action="copy-url">주소 복사</button>'
+      + '<button type="button" class="btn soft" data-action="close-banner">닫기</button></div></div>';
+  }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch (e) {} }
 
   /* ---------- 테마 ---------- */
@@ -591,6 +622,12 @@ details.tip[open] summary svg { transform: rotate(90deg); }
       + (url ? '<a class="btn primary" id="driveBtn" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + ic('share') + esc(dv.buttonLabel) + '</a>'
              : '<div class="pendingbox" id="driveBtn">' + ic('info') + esc(dv.pendingText) + '</div>')
       + '<p class="muted small">' + esc(dv.tip) + '</p></section>';
+    var ins = g.install;
+    if (ins) {
+      h += '<details class="tip card"><summary><span>' + esc(ins.title) + '</span>' + ic('chev') + '</summary><div class="tipbody"><p>' + esc(ins.intro) + '</p>'
+        + ins.models.map(function (m) { return '<div><h3>' + esc(m.label) + '</h3><ol class="steps">' + m.steps.map(function (x) { return '<li><span>' + esc(x) + '</span></li>'; }).join('') + '</ol></div>'; }).join('')
+        + '<p class="muted small">' + esc(ins.note) + '</p><p class="muted small">' + esc(ins.inapp) + '</p></div></details>';
+    }
     return h;
   }
 
@@ -654,6 +691,7 @@ details.tip[open] summary svg { transform: rotate(90deg); }
       var q = D.questions.questions.filter(function (z) { return z.id === el.getAttribute('data-qstate'); })[0], a = q && mem.answers[q.id];
       el.textContent = a && a.opt != null ? '답변: ' + q.options[a.opt] : '눌러서 답해 보세요';
     });
+    $$('.bigchk').forEach(function (l) { var i = $('input', l); if (i) l.classList.toggle('on', i.checked); });
     refreshShare();
   }
 
@@ -681,7 +719,7 @@ details.tip[open] summary svg { transform: rotate(90deg); }
       + (k.ask ? '<a class="btn soft" href="#ask" data-action="close-sheet">여쭤볼 게 있어요' + ic('arrow') + '</a>' : '')
       + (r.thumb ? '<div class="refbox"><h3 style="align-self:flex-start">이 예시에서 볼 점</h3>' + refMedia(c, true) + '<p class="refcap">' + esc(r.point || '') + '</p><p class="muted small">' + esc(REF_NOTE) + '</p></div>' : '')
       + (oth.length ? '<p class="shared">' + ic('repeat') + '<span>' + esc(names(oth)) + '에도 같이 써요. 한 번만 찍으면 돼요.</span></p>' : '')
-      + '<label class="bigchk"><input type="checkbox" data-action="toggle" data-id="' + esc(k.id) + '"' + (done ? ' checked' : '') + '><span class="box">' + ic('check') + '</span><span>찍었어요</span></label>'
+      + '<label class="bigchk' + (done ? ' on' : '') + '"><input type="checkbox" data-action="toggle" data-id="' + esc(k.id) + '"' + (done ? ' checked' : '') + '><span class="box">' + ic('check') + '</span><span>찍었어요</span></label>'
       + '</div>';
     sheet.innerHTML = h;
     document.body.style.overflow = 'hidden';
@@ -700,7 +738,7 @@ details.tip[open] summary svg { transform: rotate(90deg); }
     else if (name === 'guide' || name === 'guide-send') { view = viewGuide(); tab = 'guide'; if (name === 'guide-send') scrollTo = 'send'; }
     else if (name === 'ask') { view = viewAsk(); tab = 'ask'; }
     else view = viewHome();
-    var m = $('#main'); m.innerHTML = view;
+    var m = $('#main'); m.innerHTML = bannerHTML() + view;
     $('#nav').innerHTML = NAV.map(function (n) { return '<li><a href="#' + n[0] + '"' + (n[0] === tab ? ' aria-current="page"' : '') + '>' + ic(n[2]) + '<span>' + n[1] + '</span></a></li>'; }).join('');
     sync();
     window.scrollTo(0, 0);
@@ -735,6 +773,12 @@ details.tip[open] summary svg { transform: rotate(90deg); }
       $$('[data-action=opt][data-q="' + q + '"]').forEach(function (b) { b.setAttribute('aria-checked', String(+b.getAttribute('data-i') === cur.opt)); });
       refreshShare();
     }
+    else if (a === 'copy-url') {
+      var u = location.href.split('#')[0], done = function () { toast('주소를 복사했어요. 크롬이나 사파리에 붙여넣으면 돼요'); };
+      var fb = function () { var t = document.createElement('textarea'); t.value = u; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (er) {} document.body.removeChild(t); ok ? done() : toast('주소를 길게 눌러 복사해 보세요'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(done, fb); else fb();
+    }
+    else if (a === 'close-banner') { bannerOff = true; var bn = el.closest('.appbanner'); if (bn) bn.remove(); }
     else if (a === 'copy') copyText();
     else if (a === 'share') {
       var txt = $('#shareText').value;
@@ -766,6 +810,13 @@ details.tip[open] summary svg { transform: rotate(90deg); }
     var t = e.target;
     if (t && t.tagName === 'IMG' && t.closest) { var box = t.closest('.refmedia'); if (box) box.hidden = true; }
   }, true);
+
+  /* ---------- 오프라인 대응 ---------- */
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () { try { navigator.serviceWorker.register('sw.js').catch(function () {}); } catch (e) {} });
+  }
+  window.addEventListener('offline', function () { toast('인터넷이 끊겼어요. 체크는 계속 저장돼요'); });
+  window.addEventListener('online', function () { toast('인터넷이 다시 연결됐어요'); });
 
   /* ---------- 시작 ---------- */
   applyTheme();
