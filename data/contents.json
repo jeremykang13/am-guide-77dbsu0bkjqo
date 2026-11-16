@@ -8,6 +8,7 @@
       "length": "15~20초",
       "post": "11/17(화)",
       "postDate": "2026-11-17",
+      "dueDate": "2026-11-16",
       "deliver": "오늘 중이면 가장 좋아요",
       "emphasizeDeliver": true,
       "orientation": "landscape",
@@ -50,6 +51,7 @@
       "length": "15~20초",
       "post": "11/19(목)",
       "postDate": "2026-11-19",
+      "dueDate": "2026-11-17",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {
@@ -91,6 +93,7 @@
       "length": "4~5장",
       "post": "11/20(금)",
       "postDate": "2026-11-20",
+      "dueDate": "2026-11-18",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {
@@ -131,6 +134,7 @@
       "length": "10~15초",
       "post": "11/24(화)",
       "postDate": "2026-11-24",
+      "dueDate": "2026-11-22",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {
@@ -170,6 +174,7 @@
       "length": "10~20초",
       "post": "11/26(목)",
       "postDate": "2026-11-26",
+      "dueDate": "2026-11-24",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {
@@ -209,6 +214,7 @@
       "length": "4~5장",
       "post": "11/27(금)",
       "postDate": "2026-11-27",
+      "dueDate": "2026-11-25",
       "deliver": "11/17(화)까지",
       "orientation": "portrait",
       "ref": {

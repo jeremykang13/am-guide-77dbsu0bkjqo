@@ -291,6 +291,13 @@ details.tip[open] summary svg { transform: rotate(90deg); }
 /* 캘린더 */
 .pbadge { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; height: 26px; padding: 0 6px; border-radius: 13px; background: var(--grad); color: var(--on-grad); font-size: 14px; font-weight: 800; line-height: 1; flex: none; }
 .dl { display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 7px; border-radius: 12px; border: 1.5px solid var(--accent); color: var(--accent); font-size: 14px; font-weight: 800; line-height: 1; flex: none; }
+.pbadge.due { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+.dl.send { background: var(--fg); border-color: var(--fg); color: var(--bg); }
+.callegend { display: flex; flex-direction: column; gap: 6px; padding: 0 6px; font-size: 15px; color: var(--fg2); }
+.callegend li { display: flex; align-items: center; gap: 10px; }
+.callegend .pbadge, .callegend .dl { min-width: 44px; }
+.calkey { display: grid; grid-template-columns: 1fr; gap: 6px; padding: 10px 6px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.calkey li { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .calcard { padding: 14px 10px 12px; display: flex; flex-direction: column; gap: 10px; }
 .calmonth { font-weight: 800; font-size: 19px; padding-left: 6px; }
 .calgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
@@ -305,15 +312,6 @@ details.tip[open] summary svg { transform: rotate(90deg); }
 .day.has-ev { background: var(--accent-soft); border-color: var(--accent); }
 .day.is-today { border: 3px solid var(--fg); }
 .day.is-today .dn { font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
-.callegend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 15px; color: var(--fg2); padding: 0 6px; }
-.slist { display: flex; flex-direction: column; gap: 10px; }
-.srow { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
-.sdate { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.sdate b { font-size: 18px; }
-.sitems { display: flex; flex-direction: column; }
-.sitem { display: flex; align-items: flex-start; gap: 12px; min-height: 48px; padding: 8px 0; text-decoration: none; border-top: 1px solid var(--line); }
-.sitem:first-child { border-top: 0; }
-.sitem .pbadge, .sitem .dl { margin-top: 2px; min-width: 44px; }
 .hero { padding: 18px 18px 16px; gap: 8px; }
 .hero h1 { font-size: 24px; }
 .hero p { font-size: 17px; line-height: 1.6; }
@@ -498,9 +496,13 @@ details.tip[open] summary svg { transform: rotate(90deg); }
   function iso(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
   function viewCalendar() {
     var cfg = D.config, cal = cfg.calendar || {}, ev = {}, now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    function slot(dt) { var k = iso(dt); return ev[k] || (ev[k] = { date: dt, posts: [], deadline: false }); }
-    D.contents.contents.forEach(function (c) { var dt = pd(c.postDate); if (dt) slot(dt).posts.push(c); });
-    var dl = pd(cfg.deadline); if (dl) slot(dl).deadline = true;
+    function slot(dt) { var k = iso(dt); return ev[k] || (ev[k] = { date: dt, posts: [], dues: [], deliver: false }); }
+    D.contents.contents.forEach(function (c) {
+      var p = pd(c.postDate), u = pd(c.dueDate);
+      if (p) slot(p).posts.push(c);
+      if (u) slot(u).dues.push(c);
+    });
+    var dl = pd(cfg.deadline); if (dl) slot(dl).deliver = true;
     var keys = Object.keys(ev).sort(); if (!keys.length) return '';
     var first = ev[keys[0]].date, last = ev[keys[keys.length - 1]].date;
     var start = new Date(first); if (today < first && (first - today) / 86400000 <= 14) start = new Date(today);
@@ -510,28 +512,24 @@ details.tip[open] summary svg { transform: rotate(90deg); }
     while (d <= end && guard++ < 70) {
       var k = iso(d), e = ev[k], isToday = k === iso(today), past = d < today && !isToday;
       var label = d.getDate() === 1 ? (d.getMonth() + 1) + '/1' : d.getDate();
-      var inner = '<span class="dn">' + label + '</span>' + (e && e.deadline ? '<span class="dl">마감</span>' : '')
-        + (e ? e.posts.map(function (c) { return '<span class="pbadge">' + esc(c.id) + '</span>'; }).join('') : '');
-      var cls = 'day' + (isToday ? ' is-today' : '') + (past ? ' is-past' : '') + (e ? ' has-ev' : '');
-      var aria = fmtDate(d) + (isToday ? ' 오늘' : '') + (e ? (e.deadline ? ', 파일 보내기 마감' : '') + e.posts.map(function (c) { return ', ' + c.id + ' ' + c.title + ' 게시'; }).join('') : '');
-      cells += e && e.posts.length
-        ? '<a class="' + cls + '" href="#c-' + esc(e.posts[0].id) + '" aria-label="' + esc(aria) + '">' + inner + '</a>'
-        : '<div class="' + cls + '"' + (e || isToday ? ' role="group" aria-label="' + esc(aria) + '"' : '') + '>' + inner + '</div>';
+      var inner = '<span class="dn">' + label + '</span>';
+      var aria = fmtDate(d) + (isToday ? ' 오늘' : '');
+      if (e) {
+        if (e.deliver) { inner += '<span class="dl send">전달</span>'; aria += ', 파일 전달'; }
+        e.dues.forEach(function (c) { inner += '<span class="pbadge due">' + esc(c.id) + '</span>'; aria += ', ' + c.id + ' ' + c.title + ' 마감'; });
+        e.posts.forEach(function (c) { inner += '<span class="pbadge">' + esc(c.id) + '</span>'; aria += ', ' + c.id + ' ' + c.title + ' 게시'; });
+      }
+      cells += '<div class="day' + (isToday ? ' is-today' : '') + (past ? ' is-past' : '') + (e ? ' has-ev' : '') + '"' + (e || isToday ? ' role="group" aria-label="' + esc(aria) + '"' : '') + '>' + inner + '</div>';
       d.setDate(d.getDate() + 1);
     }
     var m1 = first.getMonth() + 1, m2 = last.getMonth() + 1, mtitle = m1 === m2 ? m1 + '월' : m1 + '월 ~ ' + m2 + '월';
-    var rows = keys.map(function (key) {
-      var e = ev[key], n = Math.round((e.date - today) / 86400000), chip = n === 0 ? '오늘' : n === 1 ? '내일' : n > 1 ? n + '일 뒤' : '지났어요';
-      return '<li class="srow"><div class="sdate"><b>' + esc(fmtDate(e.date)) + '</b><span class="chip">' + chip + '</span></div><div class="sitems">'
-        + (e.deadline ? '<div class="sitem"><span class="dl">마감</span><span>파일 보내기 마감' + (cfg.deadlineExtra ? '<br><span class="muted small">' + esc(cfg.deadlineExtra) + '</span>' : '') + '</span></div>' : '')
-        + e.posts.map(function (c) { return '<a class="sitem" href="#c-' + esc(c.id) + '"><span class="pbadge">' + esc(c.id) + '</span><span><b>' + esc(c.title) + '</b> 게시<br><span class="muted small">' + esc(c.format) + ' ' + esc(c.length) + '</span></span></a>'; }).join('')
-        + '</div></li>';
-    }).join('');
+    var key = D.contents.contents.map(function (c) { return '<li><span class="pbadge">' + esc(c.id) + '</span><span>' + esc(c.title) + '</span></li>'; }).join('');
     return '<section class="sec cal" aria-label="' + esc(cal.title || '일정') + '"><h2>' + esc(cal.title || '일정 한눈에 보기') + '</h2><p class="muted">' + esc(cal.intro || '') + '</p>'
       + '<div class="card calcard"><p class="calmonth">' + esc(mtitle) + '</p>'
       + '<div class="calgrid" role="presentation">' + '일월화수목금토'.split('').map(function (w) { return '<span class="wd">' + w + '</span>'; }).join('') + cells + '</div>'
-      + '<p class="callegend"><span class="pbadge">01</span> 게시일(콘텐츠 번호) <span class="dl">마감</span> 파일 보내기 마감</p></div>'
-      + '<ol class="slist">' + rows + '</ol></section>';
+      + '<ul class="callegend"><li><span class="dl send">전달</span><span>파일 전달일 (' + esc(cfg.deadlineLabel) + '까지 보내 주시면 좋아요)</span></li>'
+      + '<li><span class="pbadge due">01</span><span>콘텐츠별 마감일</span></li><li><span class="pbadge">01</span><span>게시일</span></li></ul>'
+      + '<ul class="calkey">' + key + '</ul></div></section>';
   }
 
   /* ---------- 화면: 콘텐츠 상세 ---------- */
