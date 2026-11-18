@@ -1,7 +1,7 @@
 {
   "_readme": "사이트 전체 설정. driveUrl에 구글 드라이브 폴더 링크를 넣으면 '파일 보내기' 버튼이 바로 켜져요.",
   "siteName": "앨리스문 촬영 가이드",
-  "driveUrl": "",
+  "driveUrl": "https://drive.google.com/drive/folders/1soYwPUqMHjwbpE8zXgSCm6gyF38s2CGo?usp=drive_link",
   "deadline": "2026-11-17",
   "deadlineLabel": "11/17(화)",
   "deadlineExtra": "01 이름의 발견은 오늘 중이면 가장 좋아요. 다른 콘텐츠의 전달일은 아래 달력에서 볼 수 있어요.",

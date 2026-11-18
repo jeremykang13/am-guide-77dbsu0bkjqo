@@ -132,6 +132,7 @@ h3 { font-size: 19px; line-height: 1.4; font-weight: 700; }
 .deadline .date { font-size: 30px; font-weight: 800; line-height: 1.2; }
 .dday { grid-row: 1 / span 2; grid-column: 2; display: flex; align-items: center; justify-content: center; min-width: 84px; height: 84px; border-radius: 42px; background: var(--grad); color: var(--on-grad); font-weight: 800; font-size: 24px; }
 .deadline .copy { grid-column: 1 / -1; padding-top: 10px; margin-top: 8px; border-top: 1px solid var(--line); }
+.deadline .homeSend { grid-column: 1 / -1; margin-top: 12px; }
 .shortcut { display: flex; align-items: center; gap: 14px; text-decoration: none; min-height: 72px; border: 1.5px solid var(--accent); }
 .shortcut .tag { font-size: 24px; font-weight: 800; color: var(--accent); min-width: 52px; }
 .shortcut b { display: block; font-size: 18px; }
@@ -507,7 +508,8 @@ details.tip[open] summary svg { transform: rotate(90deg); }
       + cfg.request.paragraphs.map(function (p) { return '<p>' + rich(p) + '</p>'; }).join('') + '</section>';
     h += '<section class="card deadline" aria-label="전달 마감"><span class="lbl">먼저 보낼 날</span><span class="date">' + esc(cfg.deadlineLabel) + '</span>'
       + (n != null ? '<span class="dday" aria-label="마감까지 ' + esc(ddayText(n)) + '">' + esc(ddayText(n)) + '</span>' : '')
-      + '<p class="copy">' + esc(deadlineCopy(n)) + (cfg.deadlineExtra ? '<br>' + esc(cfg.deadlineExtra) : '') + '</p></section>';
+      + '<p class="copy">' + esc(deadlineCopy(n)) + (cfg.deadlineExtra ? '<br>' + esc(cfg.deadlineExtra) : '') + '</p>'
+      + (safeUrl(cfg.driveUrl) ? '<a class="btn primary homeSend" href="' + esc(safeUrl(cfg.driveUrl)) + '" target="_blank" rel="noopener noreferrer">' + ic('share') + esc(D.guide.delivery.buttonLabel) + '</a>' : '') + '</section>';
     h += '<section class="sec"><h2>콘텐츠 6개</h2><p class="muted">눌러서 구도와 필요한 컷을 확인해 보세요. 같은 컷은 한 번만 찍으면 여러 콘텐츠에 같이 써요.</p><div class="clist">'
       + D.contents.contents.map(contentCard).join('') + '</div></section>';
     if (tip) {
